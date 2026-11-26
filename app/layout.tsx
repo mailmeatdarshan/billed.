@@ -4,8 +4,8 @@ import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Invoicer — Invoicing made simple',
-  description: 'Create send and track beautiful invoices in seconds',
+  title: 'Billed — Invoicing made simple',
+  description: 'Create, send, and track beautiful invoices in seconds',
 }
 
 export default function RootLayout({
