@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  VIEWED
+  PARTIALLY_PAID
+  OVERDUE
+  PAID
+  VOID
+  SUPERSEDED
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  CREDIT_CARD
+  DEBIT_CARD
+  UPI
+  PAYPAL
+  STRIPE
+  CHECK
+  OTHER
+}
+
+enum PaymentRecordStatus {
+  RECORDED
+  VOIDED
+}
+
+enum InvoiceActivityType {
+  CREATED
+  UPDATED
+  SENT
+  VIEWED
+  PAYMENT_RECEIVED
+  PAYMENT_VOIDED
+  MARKED_PAID
+  MARKED_PARTIALLY_PAID
+  MARKED_OVERDUE
+  VOIDED
+  SUPERSEDED
+  CORRECTION_ISSUED
+  REMINDER_SENT
+  PAYMENT_LINK_UPDATED
+}
+
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  business Business?
+  clients  Client[]
+  invoices Invoice[]
+
+  @@map("users")
+}
+
+
+model Business {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name      String
+  ownerName String?
+  email     String?
+  phone     String?
+  website   String?
+  logoUrl   String?
+
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  state        String?
+  postalCode   String?
+  country      String?
+
+  taxId    String?
+  taxLabel String?
+
+  currency          String @default("USD")
+  invoicePrefix     String @default("INV")
+  nextInvoiceNumber Int    @default(1)
+  defaultNotes      String?
+  defaultTerms      String?
+
+  bankName      String?
+  accountName   String?
+  accountNumber String?
+  bankCode      String?
+  swift         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoices Invoice[]
+
+  @@map("businesses")
+}
+
+
+model Client {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name  String
+  company String?
+  email String?
+  phone String?
+
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  state        String?
+  postalCode   String?
+  country      String?
+
+  taxId String?
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoices Invoice[]
+
+  @@index([userId])
+  @@map("clients")
+}
