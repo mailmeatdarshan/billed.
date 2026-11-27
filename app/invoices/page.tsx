@@ -1,0 +1,132 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { Plus } from "lucide-react";
+import { getAuthSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { computeBilling } from "@/lib/invoice-billing";
+import { monoLabelClass } from "@/lib/utils";
+import { Money } from "@/components/invoice/money";
+import { InvoiceStatusBadge } from "@/components/invoice/invoice-status-badge";
+
+export const instant = false;
+
+function formatDate(date: Date): string {
+  return date.toLocaleDateString("en-IN", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+export default async function InvoicesPage() {
+  const session = await getAuthSession();
+  if (!session?.user) redirect("/sign-in");
+
+  const invoices = await prisma.invoice.findMany({
+    where: { userId: session.user.id },
+    include: { client: true },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return (
+    <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-12 sm:px-8 sm:py-16">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className={monoLabelClass}>Your workspace</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-black sm:text-4xl dark:text-white">
+            Invoices
+          </h1>
+        </div>
+        <Link
+          href="/invoices/new"
+          className="inline-flex h-11 items-center gap-2 rounded-full bg-black px-6 text-base font-semibold text-white transition-opacity hover:opacity-80 dark:bg-white dark:text-black"
+        >
+          <Plus className="size-4" /> Create invoice
+        </Link>
+      </div>
+
+      {invoices.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-black/15 px-6 py-20 text-center dark:border-white/15">
+          <h2 className="text-xl font-semibold text-black dark:text-white">
+            No invoices yet
+          </h2>
+          <p className="mt-2 text-base text-zinc-600 dark:text-zinc-300">
+            Create your first invoice to get started
+          </p>
+          <Link
+            href="/invoices/new"
+            className="mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-black px-6 text-base font-semibold text-white transition-opacity hover:opacity-80 dark:bg-white dark:text-black"
+          >
+            <Plus className="size-4" /> Create invoice
+          </Link>
+        </div>
+      ) : (
+        <div className="overflow-x-auto rounded-2xl border border-black/10 dark:border-white/10">
+          <table className="w-full min-w-[640px] text-left text-base">
+            <thead className="bg-black font-mono text-xs tracking-wide text-white dark:bg-white dark:text-black">
+              <tr>
+                <th className="px-5 py-3 font-semibold">Number</th>
+                <th className="px-5 py-3 font-semibold">Client</th>
+                <th className="px-5 py-3 font-semibold">Status</th>
+                <th className="px-5 py-3 font-semibold">Due</th>
+                <th className="px-5 py-3 text-right font-semibold">Balance</th>
+                <th className="px-5 py-3 text-right font-semibold">Total</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-black/5 dark:divide-white/5">
+              {invoices.map((invoice) => {
+                const billing = computeBilling({
+                  total: String(invoice.total),
+                  payments: [
+                    {
+                      amount: String(invoice.amountPaid),
+                      status: "RECORDED",
+                    },
+                  ],
+                  currentStatus: invoice.status,
+                  dueDate: invoice.dueDate,
+                });
+                return (
+                  <tr key={invoice.id}>
+                    <td className="px-5 py-4">
+                      <Link
+                        href={`/invoices/${invoice.id}`}
+                        className="font-medium text-black underline-offset-4 hover:underline dark:text-white"
+                      >
+                        {invoice.number}
+                      </Link>
+                    </td>
+                    <td className="px-5 py-4 text-zinc-600 dark:text-zinc-300">
+                      {invoice.client.name}
+                    </td>
+                    <td className="px-5 py-4">
+                      <InvoiceStatusBadge
+                        status={billing.status}
+                        isOverdue={billing.isOverdue}
+                      />
+                    </td>
+                    <td className="px-5 py-4 text-zinc-600 dark:text-zinc-300">
+                      {formatDate(invoice.dueDate)}
+                    </td>
+                    <td className="px-5 py-4 text-right font-medium text-black dark:text-white">
+                      <Money
+                        value={billing.balanceDue}
+                        currency={invoice.currency}
+                      />
+                    </td>
+                    <td className="px-5 py-4 text-right font-medium text-black dark:text-white">
+                      <Money
+                        value={invoice.total}
+                        currency={invoice.currency}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </main>
+  );
+}

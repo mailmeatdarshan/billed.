@@ -16,7 +16,13 @@ function getInitials(name?: string | null, email?: string | null): string {
   return source.slice(0, 2).toUpperCase();
 }
 
-export function UserMenu({ compact = false }: { compact?: boolean }) {
+export function UserMenu({
+  compact = false,
+  placement = "bottom-right",
+}: {
+  compact?: boolean;
+  placement?: "bottom-right" | "top-left";
+}) {
   const router = useRouter();
   const { data: session } = authClient.useSession();
   const [open, setOpen] = useState(false);
@@ -75,7 +81,11 @@ export function UserMenu({ compact = false }: { compact?: boolean }) {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 z-50 mt-2 w-56 rounded-2xl border border-black/10 bg-white p-2 shadow-lg"
+          className={`absolute z-50 w-56 rounded-2xl border border-black/10 bg-white p-2 shadow-lg ${
+            placement === "top-left"
+              ? "bottom-full left-0 mb-2"
+              : "right-0 mt-2"
+          }`}
         >
           <div className="border-b border-black/10 px-3 py-2">
             {name && (
