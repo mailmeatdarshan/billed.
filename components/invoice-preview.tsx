@@ -34,14 +34,14 @@ export const DEFAULT_PREVIEW: InvoicePreviewData = {
   issued: "Nov 12, 2026",
   due: "Nov 26, 2026",
   items: [
-    { description: "Brand identity and logo", qty: "1", amount: "$1,200.00" },
-    { description: "Landing page design", qty: "1", amount: "$850.00" },
-    { description: "Social media kit", qty: "2", amount: "$300.00" },
+    { description: "Brand identity and logo", qty: "1", amount: "₹12,000.00" },
+    { description: "Landing page design", qty: "1", amount: "₹8,500.00" },
+    { description: "Social media kit", qty: "2", amount: "₹3,000.00" },
   ],
-  subtotal: "$2,350.00",
-  taxLabel: "Tax 10%",
-  tax: "$235.00",
-  total: "$2,585.00",
+  subtotal: "₹23,500.00",
+  taxLabel: "GST 18%",
+  tax: "₹4,230.00",
+  total: "₹27,730.00",
 };
 
 const statusClass: Record<PreviewStatus, string> = {

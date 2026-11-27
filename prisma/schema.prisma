@@ -99,7 +99,7 @@ model Business {
   taxId    String?
   taxLabel String?
 
-  currency          String @default("USD")
+  currency          String @default("INR")
   invoicePrefix     String @default("INV")
   nextInvoiceNumber Int    @default(1)
   defaultNotes      String?
@@ -165,7 +165,7 @@ model Invoice {
 
   issueDate DateTime @db.Date
   dueDate   DateTime @db.Date
-  currency  String   @default("USD")
+  currency  String   @default("INR")
 
   subtotal       Decimal @default(0) @db.Decimal(12, 2)
   discountAmount Decimal @default(0) @db.Decimal(12, 2)
